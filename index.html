@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="my">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MTM အထည်စက်</title>
+  <style>
+    :root{--accent:#e53935;--bg:#fafafa;--card:#fff}
+    body{margin:0;font-family:'Noto Sans Myanmar',system-ui;background:var(--bg);color:#222}
+    header{background:white;padding:10px;box-shadow:0 1px 4px rgba(0,0,0,.1);text-align:center;position:sticky;top:0;z-index:10}
+    h2{margin:5px 0}
+    .btn{background:var(--accent);color:white;padding:6px 10px;border:none;border-radius:6px;cursor:pointer}
+    .btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+    .container{max-width:900px;margin:auto;padding:10px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+    .item{background:white;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.1);overflow:hidden;cursor:pointer}
+    .item img{width:100%;height:150px;object-fit:cover}
+    .meta{padding:6px}
+    .meta strong{display:block;font-size:15px}
+    .meta .price{color:var(--accent);font-weight:bold}
+    section.card{background:var(--card);padding:10px;margin-bottom:10px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+    footer{text-align:center;padding:10px;color:#666;font-size:13px}
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.8);display:none;justify-content:center;align-items:center;z-index:100}
+    .modal-content{background:white;border-radius:10px;max-width:90%;overflow:hidden}
+    .modal-content img{width:100%;height:auto}
+    .modal-body{padding:10px;text-align:center}
+    .modal-body .price{color:var(--accent);font-weight:bold}
+    .close{position:absolute;top:10px;right:20px;color:white;font-size:26px;cursor:pointer}
+  </style>
+</head>
+<body>
+  <header>
+    <h2>မင်းသန့်မောင် အထည်စက်</h2>
+    <div>ပင်ရင်း။ ၈ လမ်း၊ တံတားဦးရပ်ကွက်၊ ဝမ်းတွင်းမြို့</div>
+    <div>ဖုန်း။ 09697680226 (Kpay / Wave Pay / Viber)</div>
+    <button id="adminToggle" class="btn ghost" style="margin-top:5px">Admin Mode</button>
+  </header>
+
+  <div class="container">
+    <section class="card">
+      <h3># ပုဆိုး</h3>
+      <div id="puso" class="grid"></div>
+    </section>
+
+    <section class="card">
+      <h3># လုံခြည်</h3>
+      <div id="lon" class="grid"></div>
+    </section>
+
+    <section class="card">
+      <h3># အခြား</h3>
+      <div id="other" class="grid"></div>
+    </section>
+
+    <section id="adminPanel" class="card" style="display:none">
+      <h3>Admin - ပစ္စည်းတင်ရန်</h3>
+      <input id="img" type="file" accept="image/*" multiple><br>
+      <label>အမျိုးအစား</label>
+      <select id="cat">
+        <option value="puso">ပုဆိုး</option>
+        <option value="lon">လုံခြည်</option>
+        <option value="other">အခြား</option>
+      </select><br>
+      <input id="name" placeholder="အမည်"><br>
+      <input id="price" placeholder="စျေး (ဥပမာ 11000)"><br>
+      <button id="save" class="btn" style="margin-top:6px">ပစ္စည်းထည့်မည်</button>
+    </section>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="close" onclick="closeModal()">&times;</div>
+    <div class="modal-content">
+      <img id="modalImg">
+      <div class="modal-body">
+        <div id="modalName"></div>
+        <div id="modalPrice" class="price"></div>
+        <button id="callBtn" class="btn" style="margin-top:8px">ဆက်သွယ်မှာယူရန်</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>© Minthant Maung အထည်စက်</footer>
+
+<script>
+const LS='mtm_items_v3',PW='mtmadmin';
+function save(){localStorage.setItem(LS,JSON.stringify(items));render();}
+let items=JSON.parse(localStorage.getItem(LS)||'[]');
+function render(){
+ ['puso','lon','other'].forEach(id=>document.getElementById(id).innerHTML='');
+ items.forEach(it=>{
+  const el=document.createElement('div');
+  el.className='item';
+  el.innerHTML=`<img src=\"${it.img}\"><div class='meta'><strong>${it.name}</strong><div class='price'>${it.price.toLocaleString()} Ks</div></div>`;
+  el.onclick=()=>openModal(it);
+  document.getElementById(it.cat).appendChild(el);
+ });
+}
+const modal=document.getElementById('modal');
+function openModal(it){
+ modal.style.display='flex';
+ document.getElementById('modalImg').src=it.img;
+ document.getElementById('modalName').textContent=it.name;
+ document.getElementById('modalPrice').textContent=it.price.toLocaleString()+' Ks';
+ document.getElementById('callBtn').onclick=()=>window.location.href='tel:09697680226';
+}
+function closeModal(){modal.style.display='none';}
+document.getElementById('adminToggle').onclick=()=>{
+ if(sessionStorage.getItem('is_admin')==='1'){sessionStorage.removeItem('is_admin');exit();}
+ else{
+     // ပြောင်းလဲမှု နံပါတ် (၁) - Password prompt ကို ပြင်ဆင်ခြင်း
+     const p=prompt('Password (****)');
+     if(p===PW){sessionStorage.setItem('is_admin','1');enter();}
+     else alert('မမှန်ပါ');
+    }
+};
+function enter(){document.getElementById('adminPanel').style.display='block';document.getElementById('adminToggle').textContent='Exit Admin';}
+function exit(){document.getElementById('adminPanel').style.display='none';document.getElementById('adminToggle').textContent='Admin Mode';}
+document.getElementById('save').onclick=()=>{
+ const fs=document.getElementById('img').files;
+ const cat=document.getElementById('cat').value;
+ const name=document.getElementById('name').value;
+ const price=Number(document.getElementById('price').value);
+ if(!fs.length)return alert('ပုံရွေးပါ');
+ [...fs].forEach(f=>{
+  const r=new FileReader();
+  r.onload=e=>{
+    items.unshift({id:Date.now(),cat,name,price,img:e.target.result});
+    save();render();
+  };
+  r.readAsDataURL(f);
+ });
+ alert('ထည့်ပြီးပါပြီ');
+ document.getElementById('img').value='';document.getElementById('name').value='';document.getElementById('price').value='';
+};
+if(sessionStorage.getItem('is_admin')==='1')enter();
+render();
+</script>
+</body>
+</html>
